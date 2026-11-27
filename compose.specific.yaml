@@ -1,0 +1,35 @@
+# If all of the environment variables described in the README are set up,
+# then this compose file can be used to deploy a service.
+
+services:
+
+  kafka-streams-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      # Connecting to Kafka
+      # These will be filled in by Aiven Apps deployment
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
+      KAFKA_CA_CERT: ${KAFKA_CA_CERT}
+      KAFKA_ACCESS_CERT: ${KAFKA_ACCESS_CERT}
+      KAFKA_ACCESS_KEY: ${KAFKA_ACCESS_KEY}
+      # Connecting to the Karapace schema repository
+      # You will need to specify these after the Kafka service is running,
+      # as Aiven automatically provides a Karapace schema registry for each
+      # Aiven for Apache Kafka service
+      SCHEMA_REGISTRY_HOST: ${SCHEMA_REGISTRY_HOST}
+      SCHEMA_REGISTRY_PORT: ${SCHEMA_REGISTRY_PORT}
+      SCHEMA_REGISTRY_USERNAME: ${SCHEMA_REGISTRY_USERNAME}
+      SCHEMA_REGISTRY_PASSWORD: ${SCHEMA_REGISTRY_PASSWORD}
+      # Which topics are input and output
+      # Note: the Kafka Streams app requires the input and output (if used)
+      # topics to exist before it runs. The default input topic is named for
+      # the topic written to by the produce_avro.py script.
+      INPUT_TOPIC: ${INPUT_TOPIC:-metric_data}
+      OUTPUT_TOPIC: ${OUTPUT_TOPIC:-anomaly_data}
+      # The anomaly specification. The defaults are designed to work with
+      # the messages written by the produce_avro.py script.
+      FIELD_NAME: ${FIELD_NAME:-temperature}
+      MIN_BOUND: ${MIN_BOUND:--50}
+      MAX_BOUND: ${MAX_BOUND:--30}
