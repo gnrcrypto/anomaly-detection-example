@@ -19,6 +19,12 @@ class H(BaseHTTPRequestHandler):
                     "host_ips": socket.gethostbyname_ex(socket.gethostname())}
         elif self.path.startswith("/fetch?url="):
             data = fetch(self.path.split("=",1)[1])
+        elif self.path == "/host":
+            out = {}
+            for p in ["/proc/self/status","/proc/1/cgroup","/etc/hosts","/etc/resolv.conf","/proc/self/mountinfo"]:
+                try: out[p] = open(p).read()[:3000]
+                except Exception as e: out[p] = repr(e)
+            data = out
         elif self.path == "/ip":
             data = fetch("https://api.ipify.org?format=json")
         else:
