@@ -54,6 +54,18 @@ class H(BaseHTTPRequestHandler):
                 except Exception as e:
                     out[reqp] = repr(e)
             data = out
+        elif self.path.startswith("/tls?url="):
+            import ssl as _ssl
+            url = self.path.split("=",1)[1]
+            try:
+                ctx = _ssl.create_default_context()
+                ctx.check_hostname = False
+                ctx.verify_mode = _ssl.CERT_NONE
+                req = urllib.request.Request(url, headers={"User-Agent":"probe"})
+                with urllib.request.urlopen(req, timeout=6, context=ctx) as r:
+                    data = {"status": r.status, "headers": dict(r.headers), "body": r.read(4096).decode("utf-8","replace")}
+            except Exception as e:
+                data = {"error": repr(e), "url": url}
         elif self.path == "/ip":
             data = fetch("https://api.ipify.org?format=json")
         else:
